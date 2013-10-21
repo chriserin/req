@@ -1,6 +1,8 @@
+gem 'minitest'
 require 'minitest/autorun'
 require 'req'
 require 'fileutils'
+require 'ostruct'
 
 class ReqTest < Minitest::Test
   def test_latest_with_no_dir
@@ -11,7 +13,7 @@ class ReqTest < Minitest::Test
   end
 
   def test_latest_with_dir
-    dirs = Req::Dir.create_session_dir
+    dirs = Req::Dir.create("/").path
     out, err = capture_io do
       Req::CLI.new.send(:latest)
     end
@@ -61,8 +63,7 @@ class ReqTest < Minitest::Test
   end
 
   def mk_test_output
-    Req::Dir.create_session_dir
-    Req::Dir.write_session("test", "<html><body><div></div></body></html>")
+    Req::Dir.create.write("<html><body><div></div></body></html>")
   end
 
   def setup

@@ -2,77 +2,68 @@ require 'fileutils'
 require 'pathname'
 
 module Req
-  module Dir
-    extend self
-    def home
-      ".req"
-    end
+  class Dir
+    class << self
+      def home
+        ".req"
+      end
 
-    def make_home_dir
-      FileUtils.mkdir(home) unless File.exists?(home)
-    end
+      def make_home_dir
+        FileUtils.mkdir(home) unless File.exists?(home)
+      end
 
-    def write_session(path, body)
-      File.open(File.join(create_session_dir(path), "output.html"), "w") do
-        |output_file| output_file.write(body)
+      def create(url="/")
+        url = "root" if url == "/"
+        new(File.join(url, unique_dir_name))
+      end
+
+      def latest
+        path = ::Dir["{.req/**/req-*,.req/empty_page}"].sort_by {|dir| File.stat(dir).ctime }.last
+        new(path) if path
+      end
+
+      private
+      def unique_dir_name
+        "req-#{rand(36**8).to_s(36)}"
       end
     end
 
-    def create_session_dir(path="/")
-      path = "root" if path == "/"
-      create_dir(File.join(home, path, "req-#{rand(36**8).to_s(36)}"))[0]
+    attr_reader :path
+    def initialize(path="root")
+      @path = path
+      @path = File.join(Dir.home, path) unless path.include? Dir.home
+      create_dir(@path)
     end
 
+    def output_path
+      File.join(@path, "output.html")
+    end
+
+    def write(content)
+      File.open(File.join(@path, "output.html"), "w") do
+        |file| file.write(content)
+      end
+    end
+
+    def write_asset(url, content)
+      File.open(asset_path(url), "w") do |file|
+        file.write(content)
+      end
+    end
+
+    def remove
+      FileUtils.rmdir(@path)
+    end
+
+    private
     def create_dir(dir)
       FileUtils.mkdir_p(dir)
     end
 
-    def remove_empty_page_dir
-      FileUtils.rm_rf(empty_page_dir)
-    end
-
-    def make_empty_page_dir
-      remove_empty_page_dir
-      create_dir(empty_page_dir)
-      create_session_dir("empty_page")
-    end
-
-    def empty_page_dir
-      File.join(home, "empty_page")
-    end
-
-    def create_phantom_pipe
-      make_home_dir
-      in_pipe_name = File.join(home, "js_repl_in.pipe")
-      out_pipe_name = File.join(home, "js_repl_out.pipe")
-      `mkfifo #{in_pipe_name} #{out_pipe_name} 2> /dev/null`
-      return in_pipe_name, out_pipe_name
-    end
-
-    def create_output_pipe
-      out_pipe_name = File.join(home, "js_repl_out.pipe")
-      return out_pipe_name
-    end
-
-    def latest_request_dir
-      ::Dir[".req/**/req-*"].sort_by {|dir| File.stat(dir).ctime }.last
-    end
-
-    def session_output_path
-      File.join(latest_request_dir, "output.html")
-    end
-
-    class << self
-      alias output_path session_output_path
-    end
-
-    def write_asset(asset_path, asset_content)
-      dirname = Pathname.new(asset_path).dirname
-      session_dir = latest_request_dir
-      FileUtils.mkdir_p(File.join(session_dir, dirname))
-      File.open(File.join(session_dir, asset_path), "w") do |file|
-        file.write(asset_content)
-      end
+    def asset_path(url)
+      path = File.join(@path, Pathname.new(url).dirname)
+      create_dir(path)
+      File.join(path, Pathname.new(url).basename)
     end
   end
 end

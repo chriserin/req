@@ -10,8 +10,16 @@ end
 module Req
   module Repl
     extend self
+    def create_phantom_pipe
+      Req::Dir.make_home_dir
+      in_pipe_name = File.join(Req::Dir.home, "js_repl_in.pipe")
+      out_pipe_name = File.join(Req::Dir.home, "js_repl_out.pipe")
+      `mkfifo #{in_pipe_name} #{out_pipe_name} 2> /dev/null`
+      return in_pipe_name, out_pipe_name
+    end
+
     def start
-      pipe_in, pipe_out = Req::Dir.create_phantom_pipe
+      pipe_in, pipe_out = create_phantom_pipe
       loop do
         command = prompt.gets
         break if command.strip == "exit"
