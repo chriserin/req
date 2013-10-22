@@ -8,6 +8,7 @@ require 'req/empty_page_dir'
 require 'req/assets'
 require 'req/repl'
 require 'req/phantom'
+require 'req/session'
 
 module Req
   class CLI < Thor
@@ -15,9 +16,8 @@ module Req
 
     desc 'get PATH', 'get the output of a request'
     def get(path)
-      require File.join(::Dir.pwd, '/config/environment')
-      session = ActionDispatch::Integration::Session.new(Rails.application)
-      session.get ::URI.encode(path)
+      session = Req::Session.new
+      session.get(path)
       Req::Dir.create(session.request.path).write(session.response.body)
       Req::ResponseFormat.output(session)
       Req::Assets.acquire_javascripts()
