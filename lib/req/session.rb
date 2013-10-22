@@ -13,6 +13,9 @@ module Req
 
     def get(url)
       @session.get ::URI.encode(url)
+    rescue Object => e
+      puts e.message, e.backtrace[0]
+      exit 1
     end
 
     def_delegators :@session, :request, :response

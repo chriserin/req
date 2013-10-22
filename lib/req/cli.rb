@@ -10,6 +10,7 @@ require 'req/assets'
 require 'req/repl'
 require 'req/phantom'
 require 'req/session'
+require 'req/compare'
 
 module Req
   class CLI < Thor
@@ -18,12 +19,7 @@ module Req
     desc 'get PATH', 'get the output of a request'
     def get(url)
       session = Req::Session.new
-      begin
-        session.get(url)
-      rescue Object => e
-        puts e.message, e.backtrace[0]
-        exit 1
-      end
+      session.get(url)
       Req::Dir.create(session.request.path).write(session.response.body)
       Req::Assets.acquire_javascripts()
       Req::ResponseFormat.output(session)
@@ -31,12 +27,7 @@ module Req
 
     desc 'compare [PATH]', 'compare the current result with the last stored result'
     def compare(url=nil)
-      session = Req::Session.new
-      url ||= Req::Dir.latest.url
-      session.get URI.encode(url)
-
-      Diffy::Diff.default_format = :color
-      puts Diffy::Diff.new(session.response.body.gsub(/^.*meta.*csrf-token.*$/, ''), Req::Dir.latest(url).read.gsub(/^.*meta.*csrf-token.*$/, ''), :diff => "--suppress-common-lines")
+      Req::Comparison.url(url)
     end
 
     desc 'repl', 'open js repl in the context of your webpage'
