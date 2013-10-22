@@ -1,6 +1,7 @@
 require 'thor'
 require 'nokogiri'
 require 'uri'
+require 'diffy'
 
 require 'req/response_format'
 require 'req/dir'
@@ -15,18 +16,27 @@ module Req
     default_task :get
 
     desc 'get PATH', 'get the output of a request'
-    def get(path)
+    def get(url)
       session = Req::Session.new
-      session.get(path)
+      begin
+        session.get(url)
+      rescue Object => e
+        puts e.message, e.backtrace[0]
+        exit 1
+      end
       Req::Dir.create(session.request.path).write(session.response.body)
-      Req::ResponseFormat.output(session)
       Req::Assets.acquire_javascripts()
+      Req::ResponseFormat.output(session)
     end
 
     desc 'compare [PATH]', 'compare the current result with the last stored result'
-    def compare(path=nil)
-      session = ActionDispatch::Integration::Session.new(Rails.application)
-      #session.get URI.encode(path || )
+    def compare(url=nil)
+      session = Req::Session.new
+      url ||= Req::Dir.latest.url
+      session.get URI.encode(url)
+
+      Diffy::Diff.default_format = :color
+      puts Diffy::Diff.new(session.response.body.gsub(/^.*meta.*csrf-token.*$/, ''), Req::Dir.latest(url).read.gsub(/^.*meta.*csrf-token.*$/, ''), :diff => "--suppress-common-lines")
     end
 
     desc 'repl', 'open js repl in the context of your webpage'

@@ -8,8 +8,8 @@ module Req
       node_set = page.css("script[src]")
       node_set.each do |js_tag|
         js_src = js_tag.attributes["src"]
-        session.get(js_src)
-        Req::Dir.write_asset(js_src.to_s.gsub(/\?.*$/, ""), session.response.body)
+        session.get(js_src.to_s)
+        Req::Dir.latest.write_asset(js_src.to_s.gsub(/\?.*$/, ""), session.response.body)
       end
     end
   end

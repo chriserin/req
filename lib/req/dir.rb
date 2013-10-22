@@ -17,8 +17,12 @@ module Req
         new(File.join(url, unique_dir_name))
       end
 
-      def latest
-        path = ::Dir["{.req/**/req-*,.req/empty_page}"].sort_by {|dir| File.stat(dir).ctime }.last
+      def latest(url=nil)
+        if url
+          path = ::Dir[".req#{url}/req-*"].sort_by {|dir| File.stat(dir).ctime }.last
+        else
+          path = ::Dir["{.req/**/req-*,.req/empty_page}"].sort_by {|dir| File.stat(dir).ctime }.last
+        end
         new(path) if path
       end
 
@@ -45,6 +49,10 @@ module Req
       end
     end
 
+    def read
+      File.read(File.join(@path, "output.html"))
+    end
+
     def write_asset(url, content)
       File.open(asset_path(url), "w") do |file|
         file.write(content)
@@ -53,6 +61,10 @@ module Req
 
     def remove
       FileUtils.rmdir(@path)
+    end
+
+    def url
+      @path.match(/(?<=.req).*(?=\/req-)/).to_s
     end
 
     private

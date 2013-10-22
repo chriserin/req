@@ -7,6 +7,7 @@ module Req
 
     def initialize
       require File.join(::Dir.pwd, '/config/environment')
+      Rails.application.config.action_dispatch.show_exceptions = false
       @session = ActionDispatch::Integration::Session.new(Rails.application)
     end
 
