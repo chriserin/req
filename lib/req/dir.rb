@@ -18,6 +18,7 @@ module Req
       end
 
       def latest(url=nil)
+        url = "/root" if url == "/"
         if url
           path = ::Dir[".req#{url}/req-*"].sort_by {|dir| File.stat(dir).ctime }.last
         else

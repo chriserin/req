@@ -26,8 +26,9 @@ module Req
     end
 
     desc 'compare [PATH]', 'compare the current result with the last stored result'
+    option :ignore_script_tags, :type => :boolean
     def compare(url=nil)
-      Req::Comparison.url(url)
+      Req::Comparison.url(url, options)
     end
 
     desc 'repl', 'open js repl in the context of your webpage'

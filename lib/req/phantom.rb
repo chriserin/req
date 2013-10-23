@@ -2,7 +2,7 @@ module Req
   module Phantom
     extend self
     COMMAND = "phantomjs"
-    FILE = "./lib/req/js/phantom.js"
+    FILE = File.expand_path "../js/phantom.js", __FILE__
     def run_exec(reqDir, options="", js="")
       cmd = construct_cmd(reqDir, options, js)
       return fork { exec(cmd) }
