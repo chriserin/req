@@ -5,7 +5,8 @@ module Req
   class Session
     extend Forwardable
 
-    def initialize
+    def initialize(options)
+      @options = options
       require File.join(::Dir.pwd, '/config/environment')
       Rails.application.config.action_dispatch.show_exceptions = false
       @session = ActionDispatch::Integration::Session.new(Rails.application)
@@ -14,7 +15,7 @@ module Req
     def get(url)
       @session.get ::URI.encode(url)
     rescue Object => e
-      puts e.message, e.backtrace[0]
+      puts e.message, (@options.full_stack? ? e.backtrace : e.backtrace[0])
       exit 1
     end
 

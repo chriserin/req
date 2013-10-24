@@ -18,7 +18,7 @@ module Req
 
     desc 'get PATH', 'get the output of a request'
     def get(url)
-      session = Req::Session.new
+      session = Req::Session.new options
       session.get(url)
       Req::Dir.create(session.request.path).write(session.response.body)
       Req::Assets.acquire_javascripts()
@@ -27,6 +27,7 @@ module Req
 
     desc 'compare [PATH]', 'compare the current result with the last stored result'
     option :ignore_script_tags, :type => :boolean
+    option :full_stack, :type => :boolean
     def compare(url=nil)
       Req::Comparison.url(url, options)
     end

@@ -3,7 +3,7 @@ require 'diffy'
 module Req
   class Comparison
     def self.url(url=nil, options)
-      session = Req::Session.new
+      session = Req::Session.new(options)
       url ||= Req::Dir.latest.url
       url = "/" if url == "/root"
       session.get URI.encode(url)
