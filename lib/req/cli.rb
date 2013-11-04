@@ -17,6 +17,8 @@ module Req
     default_task :get
 
     desc 'get PATH', 'get the output of a request'
+    option :full_stack, :type => :boolean
+    option :ten_stack, :type => :boolean
     def get(url)
       session = Req::Session.new options
       session.get(url)

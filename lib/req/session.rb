@@ -15,8 +15,14 @@ module Req
     def get(url)
       @session.get ::URI.encode(url)
     rescue Object => e
-      puts e.message, (@options.full_stack? ? e.backtrace : e.backtrace[0])
+      puts e.message, stack(e)
       exit 1
+    end
+
+    def stack(e)
+      return e.backtrace        if @options.full_stack?
+      return e.backtrace[0..10] if @options.ten_stack?
+      return e.backtrace[0]
     end
 
     def_delegators :@session, :request, :response
