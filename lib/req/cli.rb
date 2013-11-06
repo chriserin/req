@@ -11,21 +11,10 @@ require 'req/repl'
 require 'req/phantom'
 require 'req/session'
 require 'req/compare'
+require 'req/rest'
 
 module Req
-  class CLI < Thor
-    default_task :get
-
-    desc 'get PATH', 'get the output of a request'
-    option :full_stack, :type => :boolean
-    option :ten_stack, :type => :boolean
-    def get(url)
-      session = Req::Session.new options
-      session.get(url)
-      Req::Dir.create(session.request.path).write(session.response.body)
-      Req::Assets.acquire_javascripts()
-      Req::ResponseFormat.output(session)
-    end
+  class CLI < Rest
 
     desc 'compare [PATH]', 'compare the current result with the last stored result'
     option :ignore_script_tags, :type => :boolean
