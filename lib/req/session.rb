@@ -13,15 +13,16 @@ module Req
     end
 
     def get(url)
-      @session.get ::URI.encode(url)
+      url = ::URI.encode(url) unless url.include? ?%
+      @session.get url
     rescue Object => e
       puts e.message, stack(e)
       exit 1
     end
 
     def stack(e)
-      return e.backtrace        if @options.full_stack?
-      return e.backtrace[0..10] if @options.ten_stack?
+      return e.backtrace        if @options.keys.include? "full_stack" and @options.full_stack?
+      return e.backtrace[0..10] if @options.keys.include? "ten_stack" and @options.ten_stack?
       return e.backtrace[0]
     end
 

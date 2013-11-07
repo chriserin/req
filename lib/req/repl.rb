@@ -19,14 +19,17 @@ module Req
       return in_pipe_name, out_pipe_name
     end
 
+
     def start
       pipe_in, pipe_out = create_phantom_pipe
       loop do
-        command = prompt.gets
-        break if command.strip == "exit"
-        File.open(pipe_in, "w+") do |pipe|
-          pipe.write(command)
-          pipe.flush
+        Req::Assets.allow_js_requests do
+          command = prompt.gets
+          return if command.strip == "exit"
+          File.open(pipe_in, "w+") do |pipe|
+            pipe.write(command)
+            pipe.flush
+          end
         end
         puts IO.read(pipe_out)
       end
