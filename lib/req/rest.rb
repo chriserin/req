@@ -16,12 +16,14 @@ module Req
 
     desc 'get PATH', 'get the output of a request'
     default_rest_options
+    option :repl, :type => :boolean
     def get(url)
       session = Req::Session.new options
       session.get(url)
       Req::Dir.create(session.request.path).write(session.response.body)
       Req::Assets.acquire_javascripts()
       Req::ResponseFormat.output(session)
+      repl if options.repl?
     end
 
   end

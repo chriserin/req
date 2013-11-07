@@ -10,6 +10,7 @@ end
 module Req
   module Repl
     extend self
+
     def create_phantom_pipe
       Req::Dir.make_home_dir
       in_pipe_name = File.join(Req::Dir.home, "js_repl_in.pipe")
