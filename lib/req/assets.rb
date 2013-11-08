@@ -20,18 +20,14 @@ module Req
     end
 
     def allow_js_requests
-      puts "allow_js_requests"
       request, response = create_asset_pipes
       child_pid = fork {
         loop do
           js_url = IO.read(request)
-          puts "got js_url " + js_url.to_s
           js = get_javascript(js_url)
-          puts js
           IO.write(response, js)
         end
       }
-      puts "CHILD PID " + child_pid.to_s
       yield
     ensure
       Process.kill("TERM", child_pid)
