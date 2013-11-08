@@ -25,7 +25,8 @@ module Req
       loop do
         Req::Assets.allow_js_requests do
           command = prompt.gets
-          return if command.strip == "exit"
+          return :break if command.strip == "exit"
+          return :reload if command.strip == "reload"
           File.open(pipe_in, "w+") do |pipe|
             pipe.write(command)
             pipe.flush

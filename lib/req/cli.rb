@@ -20,9 +20,13 @@ module Req
 
       if options["exec"].nil?
         Req::Repl.create_phantom_pipe
-        phantom_pid = Req::Phantom.run_exec(Req::Dir.latest.path, phantom_options, js_string)
-        Repl.start
-        Process.kill(15, phantom_pid)
+        loop do
+          phantom_pid = Req::Phantom.run_exec(Req::Dir.latest.path, phantom_options, js_string)
+          next_action = Repl.start
+          Process.kill(15, phantom_pid)
+          break if next_action == :break
+          Req::Assets.acquire_javascripts if next_action == :reload
+        end
       else
         puts Req::Phantom.run(Req::Dir.latest.path, phantom_options, js_string)
       end

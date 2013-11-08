@@ -55,7 +55,7 @@ module Req
     end
 
     def write_asset(url, content)
-      File.open(asset_path(url), "w") do |file|
+      File.open(asset_path(url), "w+") do |file|
         file.write(content)
       end
     end
