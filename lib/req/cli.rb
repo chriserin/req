@@ -2,11 +2,27 @@
 module Req
   class CLI < Rest
 
-    desc 'compare [PATH]', 'compare the current result with the last stored result'
-    option :ignore_script_tags, :type => :boolean
-    option :full_stack, :type => :boolean
-    def compare(url=nil)
-      Req::Comparison.url(url, options)
+    def self.make_commands
+      command_classes.each do |klass|
+        klass.setup(self)
+        define_method command_name(klass) do |args|
+          klass.options = options if Req::Commands::Optionable === klass
+          klass.run(args)
+        end
+      end
+    end
+
+    def self.command_name(klass)
+      klass.name.split('::').last.downcase
+    end
+
+    def self.start(given_args=ARGV, config={})
+      make_commands
+      super
+    end
+
+    def self.command_classes
+      @command_classes ||= []
     end
 
     desc 'repl', 'open js repl in the context of your webpage'
@@ -32,12 +48,6 @@ module Req
       end
     ensure
       Req::EmptyPageDir.remove
-    end
-
-    desc 'exec JS', 'execute some js on the current webpage'
-    def exec(js)
-      Req::EmptyPageDir.create if Req::Dir.latest.nil?
-      puts Req::Phantom.run(Req::Dir.latest.path, "exec", js)
     end
 
     desc 'css SELECTOR', 'get html of the css selector'
