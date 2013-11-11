@@ -16,4 +16,5 @@ module Req
   require 'req/compare'
   require 'req/rest'
   require 'req/cli'
+  require 'req/commands'
 end
