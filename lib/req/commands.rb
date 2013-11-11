@@ -1,11 +1,11 @@
 module Req
   module Commands
     require 'req/commands/optionable'
-    require 'req/commands/exec'
-    require 'req/commands/compare'
-    require 'req/commands/repl'
-    require 'req/commands/get'
-    require 'req/commands/css'
-    require 'req/commands/latest'
+
+    Req::command_dirs.each do |dir|
+      ::Dir.entries(dir).each do |file|
+        require File.join(dir, file) if file =~ /\.rb$/
+      end
+    end
   end
 end
