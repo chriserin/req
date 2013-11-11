@@ -5,6 +5,7 @@
 .bundle
 .config
 .yardoc
+.reqrc_history
 Gemfile.lock
 InstalledFiles
 _yardoc

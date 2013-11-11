@@ -14,7 +14,6 @@ module Req
   require 'req/phantom'
   require 'req/session'
   require 'req/compare'
-  require 'req/rest'
   require 'req/cli'
   require 'req/commands'
 end
