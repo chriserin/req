@@ -1,9 +1,15 @@
 require 'irb/locale'
 require 'irb/input-method'
+require 'irb/ext/save-history'
 
 module IRB
   def self.conf
-    { LC_MESSAGES: Locale.new }
+    {
+      LC_MESSAGES: Locale.new,
+      SAVE_HISTORY: 100,
+      HISTORY_FILE: '.reqrc_history',
+      AT_EXIT: []
+    }
   end
 end
 
@@ -34,10 +40,13 @@ module Req
         end
         puts IO.read(pipe_out)
       end
+    ensure
+      IRB::HistorySavingAbility.save_history
     end
 
     def prompt
       @io ||= IRB::ReadlineInputMethod.new.tap do |new_io|
+        IRB::HistorySavingAbility.extend(IRB::HistorySavingAbility)
         new_io.prompt = "> "
       end
     end
