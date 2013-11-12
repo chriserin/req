@@ -50,8 +50,18 @@ module Req
       end
     end
 
+    def write_headers(headers)
+      File.open(File.join(@path, "headers.yaml"), "w") do
+        |file| file.write(headers.to_yaml)
+      end
+    end
+
     def read
       File.read(File.join(@path, "output.html"))
+    end
+
+    def read_headers
+      YAML.load_file(File.join(@path, "headers.yaml"))
     end
 
     def write_asset(url, content)

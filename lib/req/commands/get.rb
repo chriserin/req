@@ -1,6 +1,8 @@
 module Req
   module Commands
     class Get
+      extend Optionable
+
       def self.setup(context)
         context.desc 'get PATH', 'get the output of a request'
         context.option :repl, :type => :boolean
@@ -8,10 +10,12 @@ module Req
         context.option :ten_stack, :type => :boolean
       end
 
-      def self.run
+      def self.run(url)
         session = Req::Session.new options
         session.get(url)
-        Req::Dir.create(session.request.path).write(session.response.body)
+        reqdir = Req::Dir.create(session.request.path)
+        reqdir.write(session.response.body)
+        reqdir.write_headers(session.response.headers)
         Req::Assets.acquire_javascripts()
         Req::ResponseFormat.output(session)
         repl if options.repl?
