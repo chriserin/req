@@ -9,6 +9,11 @@ module Req
       @options = options
       require File.join(::Dir.pwd, '/config/environment')
       Rails.application.config.action_dispatch.show_exceptions = false
+      ActionController::Base.instance_eval do
+        define_method :protect_against_forgery? do
+          false
+        end
+      end
       @session = ActionDispatch::Integration::Session.new(Rails.application)
     end
 
@@ -18,6 +23,12 @@ module Req
     rescue Object => e
       puts e.message, stack(e)
       exit 1
+    end
+
+    def post(url, params)
+      url = ::URI.encode(url) unless url.include? ?%
+      params = Rack::Utils.parse_nested_query(params)
+      @session.post_via_redirect(url, params)
     end
 
     def stack(e)
