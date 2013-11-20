@@ -5,8 +5,9 @@ module Req
   class Session
     extend Forwardable
 
-    def initialize(options)
+    def initialize(options, headers)
       @options = options
+      @headers = headers
       require File.join(::Dir.pwd, '/config/environment')
       Rails.application.config.action_dispatch.show_exceptions = false
       ActionController::Base.instance_eval do
@@ -19,7 +20,7 @@ module Req
 
     def get(url)
       url = ::URI.encode(url) unless url.include? ?%
-      @session.get url
+      @session.get url, nil, @headers
     rescue Object => e
       puts e.message, stack(e)
       exit 1

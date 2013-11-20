@@ -9,12 +9,12 @@ module Req
         context.option :headers, :type => :boolean
       end
 
-      def self.run
-        latest_dir = Req::Dir.latest
+      def self.run(url=nil)
+        latest_dir = Req::Dir.latest(url)
         if options.output?
           puts latest_dir.read
         elsif options.headers?
-          puts latest_dir.read_headers
+          latest_dir.read_headers.each {|k, v| puts "--#{k}=#{v}"}
         else
           if latest_dir.nil?
             puts "no req directories"

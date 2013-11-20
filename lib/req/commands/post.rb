@@ -8,9 +8,9 @@ module Req
       end
 
       def self.run(url, params="")
-        session = Req::Session.new options
+        session = Req::Session.new options, {}
         session.post(url, params)
-        reqdir = Req::Dir.create(session.request.path)
+        reqdir = Req::Dir.create(url)
         reqdir.write(session.response.body)
         reqdir.write_headers(session.response.headers)
         Req::Assets.acquire_javascripts()

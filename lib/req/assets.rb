@@ -3,7 +3,7 @@ module Req
   module Assets
     extend self
     def acquire_javascripts()
-      session = Req::Session.new({})
+      session = Req::Session.new({}, {})
       page = Nokogiri::HTML(open(Req::Dir.latest.output_path))
       node_set = page.css("script[src]")
       node_set.each do |js_tag|
@@ -14,7 +14,7 @@ module Req
     end
 
     def get_javascript(js_url)
-      session = Req::Session.new({})
+      session = Req::Session.new({}, {})
       session.get(js_url.to_s)
       session.response.body
     end
