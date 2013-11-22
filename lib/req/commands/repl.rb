@@ -16,14 +16,7 @@ module Req
         Req::EmptyPageDir.create if options.empty_page? || options.jquery? || Req::Dir.latest.nil?
 
         if options["exec"].nil?
-          Req::Repl.create_phantom_pipe
-          loop do
-            phantom_pid = Req::Phantom.run_exec(Req::Dir.latest.path, phantom_options, js_string)
-            next_action = Req::Repl.start
-            Process.kill(15, phantom_pid)
-            break if next_action == :break
-            Req::Assets.acquire_javascripts if next_action == :reload
-          end
+          Req::Repl.new(phantom_options, js_string).start
         else
           puts Req::Phantom.run(Req::Dir.latest.path, phantom_options, js_string)
         end

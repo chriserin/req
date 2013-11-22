@@ -1,21 +1,22 @@
-require 'irb/locale'
-require 'irb/input-method'
-require 'irb/ext/save-history'
-
-module IRB
-  def self.conf
-    {
-      LC_MESSAGES: Locale.new,
-      SAVE_HISTORY: 100,
-      HISTORY_FILE: '.reqrc_history',
-      AT_EXIT: []
-    }
-  end
-end
+require 'easy_repl'
 
 module Req
-  module Repl
-    extend self
+  class Repl
+    include EasyRepl::Repl
+    EasyRepl.history_file = ".reqrc_history"
+
+    def initialize(phantom_options, js_string)
+      @phantom_options, @js_string = phantom_options, js_string
+    end
+
+    def setup
+      @pipe_in, @pipe_out = create_phantom_pipe
+      @phantom_pid = Req::Phantom.run_exec(Req::Dir.latest.path, @phantom_options, @js_string)
+    end
+
+    def teardown
+      Process.kill(15, @phantom_pid)
+    end
 
     def create_phantom_pipe
       Req::Dir.make_home_dir
@@ -25,29 +26,17 @@ module Req
       return in_pipe_name, out_pipe_name
     end
 
-
-    def start
-      pipe_in, pipe_out = create_phantom_pipe
-      loop do
-        Req::Assets.allow_js_requests do
-          command = prompt.gets
-          return :break if command.strip == "exit"
-          return :reload if command.strip == "reload"
-          File.open(pipe_in, "w+") do |pipe|
-            pipe.write(command)
-            pipe.flush
-          end
+    def process_input(input)
+      asset_server = nil
+      begin
+        asset_server = Req::AssetServer.start
+        File.open(@pipe_in, "w+") do |pipe|
+          pipe.write(input)
+          pipe.flush
         end
-        puts IO.read(pipe_out)
-      end
-    ensure
-      IRB::HistorySavingAbility.save_history
-    end
-
-    def prompt
-      @io ||= IRB::ReadlineInputMethod.new.tap do |new_io|
-        IRB::HistorySavingAbility.extend(IRB::HistorySavingAbility)
-        new_io.prompt = "> "
+        puts IO.read(@pipe_out)
+      ensure
+        asset_server.close
       end
     end
   end

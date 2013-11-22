@@ -18,23 +18,34 @@ module Req
       session.get(js_url.to_s)
       session.response.body
     end
+  end
+end
 
-    def allow_js_requests
-      request, response = create_asset_pipes
-      child_pid = fork {
-        loop do
-          js_url = IO.read(request)
-          js = get_javascript(js_url)
-          IO.write(response, js)
-        end
-      }
-      yield
-    ensure
-      Process.kill("TERM", child_pid)
-      FileUtils.rm(request)
-      FileUtils.rm(response)
+module Req
+  class AssetServer
+    def self.start
+      new
     end
 
+    def initialize
+      @request, @response = create_asset_pipes
+      @child_pid = fork {
+        loop do
+          js_url = IO.read(@request)
+          js = Req::Assets.get_javascript(js_url)
+          IO.write(@response, js)
+        end
+      }
+    end
+    private :initialize
+
+    def close
+      Process.kill("TERM", @child_pid)
+      FileUtils.rm(@request)
+      FileUtils.rm(@response)
+    end
+
+    private
     def create_asset_pipes
       Req::Dir.make_home_dir
       in_pipe_name = File.join(Req::Dir.home, "asset_pipe_request")
