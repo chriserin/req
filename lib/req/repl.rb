@@ -18,6 +18,14 @@ module Req
       Process.kill(15, @phantom_pid)
     end
 
+    def before_input
+      @asset_server = Req::AssetServer.start
+    end
+
+    def after_input
+      @asset_server.close
+    end
+
     def create_phantom_pipe
       Req::Dir.make_home_dir
       in_pipe_name = File.join(Req::Dir.home, "js_repl_in.pipe")
@@ -27,17 +35,11 @@ module Req
     end
 
     def process_input(input)
-      asset_server = nil
-      begin
-        asset_server = Req::AssetServer.start
-        File.open(@pipe_in, "w+") do |pipe|
-          pipe.write(input)
-          pipe.flush
-        end
-        puts IO.read(@pipe_out)
-      ensure
-        asset_server.close
+      File.open(@pipe_in, "w+") do |pipe|
+        pipe.write(input)
+        pipe.flush
       end
+      puts IO.read(@pipe_out)
     end
   end
 end
